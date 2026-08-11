@@ -1,43 +1,138 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { checkConnections } from '../../lib/connections';
+import { detectColorOnlyIndicators } from '../../detector/detect-color-only';
+import type { ColorOnlyFinding } from '../../detector/types';
+import { highlightFindingInActiveTab } from '../../overlay/highlight';
+import {
+  applyOverlayToActiveTab,
+  removeAllOverlaysFromActiveTab,
+  removeOverlayFromActiveTab,
+} from '../../overlay/run-overlay';
+import { scanActiveTab } from '../../scanner/run-scan';
 import { App } from './App';
 
-vi.mock('../../lib/connections', () => ({
-  checkConnections: vi.fn(),
+vi.mock('../../scanner/run-scan', () => ({ scanActiveTab: vi.fn() }));
+vi.mock('../../detector/detect-color-only', () => ({ detectColorOnlyIndicators: vi.fn() }));
+vi.mock('../../overlay/highlight', () => ({ highlightFindingInActiveTab: vi.fn() }));
+vi.mock('../../overlay/run-overlay', () => ({
+  applyOverlayToActiveTab: vi.fn(),
+  removeOverlayFromActiveTab: vi.fn(),
+  removeAllOverlaysFromActiveTab: vi.fn(),
 }));
 
-const mockedCheckConnections = vi.mocked(checkConnections);
+const mockedScan = vi.mocked(scanActiveTab);
+const mockedDetect = vi.mocked(detectColorOnlyIndicators);
+const mockedHighlight = vi.mocked(highlightFindingInActiveTab);
+const mockedApply = vi.mocked(applyOverlayToActiveTab);
+const mockedRemove = vi.mocked(removeOverlayFromActiveTab);
+const mockedRemoveAll = vi.mocked(removeAllOverlaysFromActiveTab);
 
-describe('ColorSense popup', () => {
+describe('ColorSense popup scan workflow', () => {
   beforeEach(() => {
-    mockedCheckConnections.mockReset();
+    vi.resetAllMocks();
+    mockedScan.mockResolvedValue({
+      scanId: 'scan',
+      elements: [],
+      truncated: false,
+      unsupportedColorValues: 0,
+    });
+    mockedDetect.mockReturnValue([]);
+    mockedHighlight.mockResolvedValue('highlighted');
+    mockedApply.mockResolvedValue({ elementRef: 'finding-1', status: 'applied' });
+    mockedRemove.mockResolvedValue({ elementRef: 'finding-1', status: 'removed' });
+    mockedRemoveAll.mockResolvedValue({ removed: 1, missingTargets: 0 });
   });
 
-  it('shows successful local connection results', async () => {
-    mockedCheckConnections.mockResolvedValue({
-      background: { source: 'background', status: 'ready', version: '0.1.0' },
-      page: { source: 'page', status: 'ready', version: '0.1.0' },
-    });
-
+  it('shows idle, scanning, and empty states', async () => {
+    let resolveScan: ((value: Awaited<ReturnType<typeof scanActiveTab>>) => void) | undefined;
+    mockedScan.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveScan = resolve;
+      }),
+    );
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: 'Check connection' }));
 
-    await waitFor(() => expect(screen.getAllByText('Ready · v0.1.0')).toHaveLength(2));
-    expect(screen.getByText('No page content leaves your browser.')).toBeInTheDocument();
+    expect(screen.getByText('Start a one-time scan when you are ready.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Scan this page' }));
+    expect(screen.getByText('Inspecting visible DOM and SVG colors…')).toBeInTheDocument();
+    expect(mockedRemoveAll).toHaveBeenCalled();
+
+    resolveScan?.({ scanId: 'scan', elements: [], truncated: false, unsupportedColorValues: 0 });
+    expect(await screen.findByText('No likely color-only signals found.')).toBeInTheDocument();
   });
 
-  it('presents a restricted-page failure without hiding background health', async () => {
-    mockedCheckConnections.mockResolvedValue({
-      background: { source: 'background', status: 'ready', version: '0.1.0' },
-      page: { source: 'page', status: 'unavailable', reason: 'Cannot access a chrome:// URL.' },
-    });
-
+  it('groups findings and supports keyboard-accessible locate, apply, and undo', async () => {
+    mockedDetect.mockReturnValue([finding()]);
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: 'Check connection' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Scan this page' }));
 
-    expect(await screen.findByText('Cannot access a chrome:// URL.')).toBeInTheDocument();
-    expect(screen.getByText('Ready · v0.1.0')).toBeInTheDocument();
+    expect(await screen.findByText('Status signals')).toBeInTheDocument();
+    expect(screen.getByText('Status text')).toBeInTheDocument();
+    expect(screen.getByText('medium · 70%')).toBeInTheDocument();
+
+    const locate = screen.getByRole('button', { name: 'Locate' });
+    locate.focus();
+    fireEvent.keyDown(locate, { key: 'Enter' });
+    fireEvent.click(locate);
+    await waitFor(() => expect(mockedHighlight).toHaveBeenCalledWith('finding-1'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply Error' }));
+    expect(await screen.findByRole('button', { name: 'Undo aid' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Undo aid' }));
+    await waitFor(() => expect(mockedRemove).toHaveBeenCalledWith('finding-1'));
+  });
+
+  it('shows partial results and supports page-level undo', async () => {
+    mockedScan.mockResolvedValue({
+      scanId: 'scan',
+      elements: [],
+      truncated: true,
+      unsupportedColorValues: 0,
+    });
+    mockedDetect.mockReturnValue([finding()]);
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Scan this page' }));
+
+    expect(
+      await screen.findByText('The page exceeded the scan limit; results are partial.'),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Apply Error' }));
+    const undoAll = await screen.findByRole('button', { name: 'Undo all' });
+    fireEvent.click(undoAll);
+
+    await waitFor(() => expect(mockedRemoveAll).toHaveBeenCalled());
+    expect(await screen.findByText('Removed 1 semantic aid.')).toBeInTheDocument();
+  });
+
+  it('explains restricted pages without exposing the raw browser error', async () => {
+    mockedScan.mockRejectedValue(new Error('Cannot access a chrome:// URL.'));
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Scan this page' }));
+
+    expect(await screen.findByText('This page cannot be scanned.')).toBeInTheDocument();
+    expect(screen.queryByText('Cannot access a chrome:// URL.')).not.toBeInTheDocument();
+  });
+
+  it('shows safe failure details for non-restricted errors', async () => {
+    mockedScan.mockRejectedValue(new Error('The page returned an invalid color scan result.'));
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Scan this page' }));
+
+    expect(await screen.findByText('Scan failed safely.')).toBeInTheDocument();
+    expect(screen.getByText('The page returned an invalid color scan result.')).toBeInTheDocument();
   });
 });
+
+function finding(): ColorOnlyFinding {
+  return {
+    elementRef: 'finding-1',
+    candidateType: 'status',
+    evidence: ['status-keyword'],
+    confidence: 'medium',
+    confidenceScore: 0.7,
+    disposition: 'color-only-candidate',
+    reviewRequired: true,
+    semantic: 'error',
+  };
+}
