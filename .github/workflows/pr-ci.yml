@@ -49,4 +49,5 @@ jobs:
           name: colorsense-pr-${{ github.event.pull_request.number }}-${{ github.sha }}
           path: apps/extension/.output/*-chrome.zip
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 7
