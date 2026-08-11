@@ -39,7 +39,10 @@ export function App() {
         if (active && !localeChangedByUser.current) setLocalePreference(preference);
       })
       .catch(() => {
-        if (active) setActionMessage(MESSAGES.en.preferenceLoadFailed);
+        if (active) {
+          const fallbackLocale = resolveLocale('auto', browserLanguages());
+          setActionMessage(MESSAGES[fallbackLocale].preferenceLoadFailed);
+        }
       });
     return () => {
       active = false;
