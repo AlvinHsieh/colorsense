@@ -24,11 +24,44 @@ export interface ColorObservation {
   color: NormalizedColor;
 }
 
+export const ARIA_STATE_SIGNALS = [
+  'checked',
+  'current',
+  'disabled',
+  'invalid',
+  'pressed',
+  'selected',
+] as const;
+
+export type AriaStateSignal = (typeof ARIA_STATE_SIGNALS)[number];
+
+export const TEXT_SIGNALS = [
+  'positive-number',
+  'negative-number',
+  'percentage',
+  'success-keyword',
+  'warning-keyword',
+  'error-keyword',
+] as const;
+
+export type TextSignal = (typeof TEXT_SIGNALS)[number];
+
+export interface ElementSemanticSignals {
+  ariaStates: AriaStateSignal[];
+  text: TextSignal[];
+  nearbyText: TextSignal[];
+  hasAccessibleName: boolean;
+  hasIcon: boolean;
+  coloredShape: boolean;
+  nearbyLegend: boolean;
+}
+
 export interface ElementColorObservation {
   ref: string;
   tagName: string;
   role?: string;
   colors: ColorObservation[];
+  signals: ElementSemanticSignals;
 }
 
 export interface DocumentColorScan {
