@@ -3,7 +3,9 @@ import type {
   ColorProperty,
   DocumentColorScan,
   ElementColorObservation,
+  ElementSemanticSignals,
   NormalizedColor,
+  TextSignal,
 } from './types';
 
 const DEFAULT_MAX_ELEMENTS = 2_000;
@@ -171,6 +173,88 @@ export function scanDocument(
     );
   }
 
+  function signalsFromText(text: string): TextSignal[] {
+    const signals: TextSignal[] = [];
+
+    if (/(^|\s|\()\+\s*\d/.test(text)) signals.push('positive-number');
+    if (/(^|\s|\()[−-]\s*\d/.test(text)) signals.push('negative-number');
+    if (/\d(?:[\d.,]*\d)?\s*%/.test(text)) signals.push('percentage');
+    if (/\b(?:success|successful|healthy|online|passed|valid|active|up)\b/.test(text)) {
+      signals.push('success-keyword');
+    }
+    if (/\b(?:warning|warn|pending|degraded|caution|unknown)\b/.test(text)) {
+      signals.push('warning-keyword');
+    }
+    if (/\b(?:error|failed|failure|offline|invalid|critical|down)\b/.test(text)) {
+      signals.push('error-keyword');
+    }
+
+    return signals;
+  }
+
+  function extractTextSignals(element: Element): TextSignal[] {
+    const directText = [...element.childNodes]
+      .filter((node) => node.nodeType === Node.TEXT_NODE)
+      .map((node) => node.textContent ?? '')
+      .join(' ');
+    const accessibleText = [element.getAttribute('aria-label'), element.getAttribute('title')]
+      .filter((value): value is string => Boolean(value))
+      .join(' ');
+    return signalsFromText(`${directText} ${accessibleText}`.trim().toLowerCase().slice(0, 256));
+  }
+
+  function extractNearbyTextSignals(element: Element): TextSignal[] {
+    const nearbyText = [...(element.parentElement?.childNodes ?? [])]
+      .filter((node) => node !== element && node.textContent)
+      .map((node) => node.textContent ?? '')
+      .join(' ')
+      .trim()
+      .toLowerCase()
+      .slice(0, 256);
+    return signalsFromText(nearbyText);
+  }
+
+  function extractSemanticSignals(
+    element: Element,
+    rect: DOMRect,
+    hasText: boolean,
+  ): ElementSemanticSignals {
+    const ariaStates: ElementSemanticSignals['ariaStates'] = [];
+    const ariaAttributes = [
+      ['aria-checked', 'checked'],
+      ['aria-current', 'current'],
+      ['aria-disabled', 'disabled'],
+      ['aria-invalid', 'invalid'],
+      ['aria-pressed', 'pressed'],
+      ['aria-selected', 'selected'],
+    ] as const;
+
+    for (const [attribute, signal] of ariaAttributes) {
+      const value = element.getAttribute(attribute);
+      if (value !== null && value !== 'false') {
+        ariaStates.push(signal);
+      }
+    }
+
+    const hasIcon = Boolean(element.querySelector('svg, [role="img"], img[alt]:not([alt=""])'));
+    const coloredShape = !hasText && rect.width <= 48 && rect.height <= 48;
+    const nearbyLegend = Boolean(
+      element.closest('legend, [role="legend"], figure, [class~="legend"], [class~="key"]'),
+    );
+
+    return {
+      ariaStates,
+      text: extractTextSignals(element),
+      nearbyText: extractNearbyTextSignals(element),
+      hasAccessibleName: Boolean(
+        element.getAttribute('aria-label')?.trim() || element.getAttribute('title')?.trim(),
+      ),
+      hasIcon,
+      coloredShape,
+      nearbyLegend,
+    };
+  }
+
   function addColor(colors: ColorObservation[], property: ColorProperty, rawValue: string): void {
     const color = parseColor(rawValue);
     if (color && color.alpha > 0) {
@@ -200,7 +284,8 @@ export function scanDocument(
     }
 
     const colors: ColorObservation[] = [];
-    if (hasDirectText(element)) {
+    const hasText = hasDirectText(element);
+    if (hasText) {
       addColor(colors, 'text', style.color);
     }
     addColor(colors, 'background', style.backgroundColor);
@@ -217,11 +302,13 @@ export function scanDocument(
 
     element.setAttribute('data-colorsense-ref', ref);
     const role = element.getAttribute('role')?.trim();
+    const rect = element.getBoundingClientRect();
     return {
       ref,
       tagName: element.tagName.toLowerCase(),
       ...(role ? { role } : {}),
       colors,
+      signals: extractSemanticSignals(element, rect, hasText),
     };
   }
 

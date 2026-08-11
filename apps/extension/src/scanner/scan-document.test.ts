@@ -79,6 +79,29 @@ describe('scanDocument', () => {
     );
   });
 
+  it('emits enumerated ARIA and nearby-text signals without raw content', () => {
+    document.body.innerHTML = `
+      <div><span id="dot" role="status" aria-invalid="true" aria-label="Server status" style="background: red"></span><span>Offline</span></div>
+    `;
+    vi.mocked(Element.prototype.getBoundingClientRect).mockImplementation(function (this: Element) {
+      return this.id === 'dot'
+        ? ({ ...visibleRect, width: 16, height: 16, right: 16, bottom: 16 } as DOMRect)
+        : visibleRect;
+    });
+
+    const result = scanDocument('scan-signals');
+    const dot = result.elements.find((element) => element.role === 'status');
+
+    expect(dot?.signals).toMatchObject({
+      ariaStates: ['invalid'],
+      nearbyText: ['error-keyword'],
+      hasAccessibleName: true,
+      coloredShape: true,
+    });
+    expect(JSON.stringify(result)).not.toContain('Offline');
+    expect(JSON.stringify(result)).not.toContain('Server status');
+  });
+
   it('excludes hidden, zero-size, editable, and extension-owned elements', () => {
     document.body.innerHTML = `
       <div id="hidden" style="display:none;color:red">hidden</div>

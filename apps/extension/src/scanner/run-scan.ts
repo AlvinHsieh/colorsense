@@ -1,7 +1,13 @@
 import { browser } from 'wxt/browser';
 
 import { scanDocument } from './scan-document';
-import { COLOR_PROPERTIES, type DocumentColorScan, type NormalizedColor } from './types';
+import {
+  ARIA_STATE_SIGNALS,
+  COLOR_PROPERTIES,
+  TEXT_SIGNALS,
+  type DocumentColorScan,
+  type NormalizedColor,
+} from './types';
 
 const DEFAULT_MAX_ELEMENTS = 2_000;
 const MAX_ELEMENTS_LIMIT = 5_000;
@@ -61,7 +67,36 @@ function isElementObservation(value: unknown): boolean {
     (value.role === undefined || typeof value.role === 'string') &&
     Array.isArray(value.colors) &&
     value.colors.length > 0 &&
-    value.colors.every(isColorObservation)
+    value.colors.every(isColorObservation) &&
+    isSemanticSignals(value.signals)
+  );
+}
+
+function isSemanticSignals(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.ariaStates) &&
+    value.ariaStates.every(
+      (state) =>
+        typeof state === 'string' &&
+        ARIA_STATE_SIGNALS.includes(state as (typeof ARIA_STATE_SIGNALS)[number]),
+    ) &&
+    Array.isArray(value.text) &&
+    value.text.every(
+      (signal) =>
+        typeof signal === 'string' &&
+        TEXT_SIGNALS.includes(signal as (typeof TEXT_SIGNALS)[number]),
+    ) &&
+    Array.isArray(value.nearbyText) &&
+    value.nearbyText.every(
+      (signal) =>
+        typeof signal === 'string' &&
+        TEXT_SIGNALS.includes(signal as (typeof TEXT_SIGNALS)[number]),
+    ) &&
+    typeof value.hasAccessibleName === 'boolean' &&
+    typeof value.hasIcon === 'boolean' &&
+    typeof value.coloredShape === 'boolean' &&
+    typeof value.nearbyLegend === 'boolean'
   );
 }
 
