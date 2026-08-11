@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "ColorSense"
+  },
+  "extensionDescription": {
+    "message": "將依賴顏色傳達的網頁訊號轉換為可理解的無障礙語意資訊。"
+  },
+  "extensionActionTitle": {
+    "message": "ColorSense — 揭示顏色背後的語意"
+  }
+}

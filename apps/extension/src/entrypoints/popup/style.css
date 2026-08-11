@@ -21,7 +21,8 @@ body {
   max-width: 400px;
 }
 
-button {
+button,
+select {
   font: inherit;
 }
 
@@ -50,6 +51,36 @@ button {
 .brand-line {
   gap: 9px;
   margin-bottom: 12px;
+}
+
+.locale-control {
+  display: grid;
+  gap: 2px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.locale-control select {
+  width: 82px;
+  padding: 4px 6px;
+  border: 1px solid #a8beb4;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--forest);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.locale-control select:hover {
+  border-color: var(--forest);
+  background: #fffdf8;
 }
 
 .signal-mark {
@@ -183,7 +214,8 @@ button {
   font-weight: 750;
 }
 
-button:focus-visible {
+button:focus-visible,
+select:focus-visible {
   outline: 3px solid #005fcc;
   outline-offset: 3px;
 }

@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "ColorSense"
+  },
+  "extensionDescription": {
+    "message": "Turn color-dependent web signals into accessible semantic information."
+  },
+  "extensionActionTitle": {
+    "message": "ColorSense — reveal color-only meaning"
+  }
+}

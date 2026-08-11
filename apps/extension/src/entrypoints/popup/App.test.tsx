@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { detectColorOnlyIndicators } from '../../detector/detect-color-only';
 import type { ColorOnlyFinding } from '../../detector/types';
+import { loadLocalePreference, saveLocalePreference } from '../../i18n/preference';
 import { highlightFindingInActiveTab } from '../../overlay/highlight';
 import {
   applyOverlayToActiveTab,
@@ -14,6 +15,10 @@ import { App } from './App';
 
 vi.mock('../../scanner/run-scan', () => ({ scanActiveTab: vi.fn() }));
 vi.mock('../../detector/detect-color-only', () => ({ detectColorOnlyIndicators: vi.fn() }));
+vi.mock('../../i18n/preference', () => ({
+  loadLocalePreference: vi.fn(),
+  saveLocalePreference: vi.fn(),
+}));
 vi.mock('../../overlay/highlight', () => ({ highlightFindingInActiveTab: vi.fn() }));
 vi.mock('../../overlay/run-overlay', () => ({
   applyOverlayToActiveTab: vi.fn(),
@@ -23,6 +28,8 @@ vi.mock('../../overlay/run-overlay', () => ({
 
 const mockedScan = vi.mocked(scanActiveTab);
 const mockedDetect = vi.mocked(detectColorOnlyIndicators);
+const mockedLoadLocale = vi.mocked(loadLocalePreference);
+const mockedSaveLocale = vi.mocked(saveLocalePreference);
 const mockedHighlight = vi.mocked(highlightFindingInActiveTab);
 const mockedApply = vi.mocked(applyOverlayToActiveTab);
 const mockedRemove = vi.mocked(removeOverlayFromActiveTab);
@@ -38,6 +45,8 @@ describe('ColorSense popup scan workflow', () => {
       unsupportedColorValues: 0,
     });
     mockedDetect.mockReturnValue([]);
+    mockedLoadLocale.mockResolvedValue('auto');
+    mockedSaveLocale.mockResolvedValue(undefined);
     mockedHighlight.mockResolvedValue('highlighted');
     mockedApply.mockResolvedValue({ elementRef: 'finding-1', status: 'applied' });
     mockedRemove.mockResolvedValue({ elementRef: 'finding-1', status: 'removed' });
@@ -69,7 +78,7 @@ describe('ColorSense popup scan workflow', () => {
 
     expect(await screen.findByText('Status signals')).toBeInTheDocument();
     expect(screen.getByText('Status text')).toBeInTheDocument();
-    expect(screen.getByText('medium · 70%')).toBeInTheDocument();
+    expect(screen.getByText('Medium · 70%')).toBeInTheDocument();
 
     const locate = screen.getByRole('button', { name: 'Locate' });
     locate.focus();
@@ -121,6 +130,39 @@ describe('ColorSense popup scan workflow', () => {
 
     expect(await screen.findByText('Scan failed safely.')).toBeInTheDocument();
     expect(screen.getByText('The page returned an invalid color scan result.')).toBeInTheDocument();
+  });
+
+  it('switches to Traditional Chinese, updates document language, and persists locally', async () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Language' }), {
+      target: { value: 'zh-TW' },
+    });
+
+    expect(await screen.findByText('掃描目前頁面')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '掃描這個頁面' })).toBeInTheDocument();
+    expect(document.documentElement.lang).toBe('zh-TW');
+    expect(document.title).toBe('ColorSense — 揭示顏色背後的語意');
+    await waitFor(() => expect(mockedSaveLocale).toHaveBeenCalledWith('zh-TW'));
+  });
+
+  it('loads a persisted locale and removes stale overlays when the language changes', async () => {
+    mockedLoadLocale.mockResolvedValue('zh-TW');
+    mockedDetect.mockReturnValue([finding()]);
+    render(<App />);
+
+    expect(await screen.findByText('掃描目前頁面')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '掃描這個頁面' }));
+    fireEvent.click(await screen.findByRole('button', { name: '套用「錯誤」' }));
+    expect(await screen.findByRole('button', { name: '復原輔助標記' })).toBeInTheDocument();
+
+    mockedRemoveAll.mockClear();
+    fireEvent.change(screen.getByRole('combobox', { name: '語言' }), {
+      target: { value: 'en' },
+    });
+
+    await waitFor(() => expect(mockedRemoveAll).toHaveBeenCalledTimes(1));
+    expect(await screen.findByRole('button', { name: 'Apply Error' })).toBeInTheDocument();
   });
 });
 

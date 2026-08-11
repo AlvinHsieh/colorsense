@@ -32,7 +32,7 @@ describe('page semantic overlays', () => {
     const target = addTarget('target-a');
     target.setAttribute('aria-describedby', 'existing-description');
 
-    expect(applySemanticOverlay(finding('target-a', 'error'))).toEqual({
+    expect(applySemanticOverlay(finding('target-a', 'error'), '錯誤')).toEqual({
       elementRef: 'target-a',
       status: 'applied',
     });
@@ -40,8 +40,8 @@ describe('page semantic overlays', () => {
 
     expect(overlay).toHaveAttribute('data-colorsense-owned', 'true');
     expect(overlay).toHaveAttribute('role', 'note');
-    expect(overlay).toHaveAttribute('aria-label', 'ColorSense: Error');
-    expect(overlay?.textContent).toBe('✕ Error');
+    expect(overlay).toHaveAttribute('aria-label', 'ColorSense: 錯誤');
+    expect(overlay?.textContent).toBe('✕ 錯誤');
     expect(overlay?.style.position).toBe('absolute');
     expect(overlay?.style.pointerEvents).toBe('none');
     expect(target).toHaveAttribute('aria-describedby', `existing-description ${overlay?.id ?? ''}`);
@@ -52,8 +52,8 @@ describe('page semantic overlays', () => {
     const target = addTarget('target-b');
     const semanticFinding = finding('target-b', 'increase');
 
-    expect(applySemanticOverlay(semanticFinding).status).toBe('applied');
-    expect(applySemanticOverlay(semanticFinding).status).toBe('already-applied');
+    expect(applySemanticOverlay(semanticFinding, 'Increase').status).toBe('applied');
+    expect(applySemanticOverlay(semanticFinding, 'Increase').status).toBe('already-applied');
     expect(document.querySelectorAll('[data-colorsense-overlay-for="target-b"]')).toHaveLength(1);
 
     expect(removeSemanticOverlay('target-b').status).toBe('removed');
@@ -65,18 +65,21 @@ describe('page semantic overlays', () => {
     addTarget('target-c');
 
     expect(
-      applySemanticOverlay({ ...finding('target-c', 'warning'), confidenceScore: 0.4 }).status,
+      applySemanticOverlay({ ...finding('target-c', 'warning'), confidenceScore: 0.4 }, 'Warning')
+        .status,
     ).toBe('unsupported');
     expect(
-      applySemanticOverlay({ ...finding('target-c', 'warning'), semantic: undefined }).status,
+      applySemanticOverlay({ ...finding('target-c', 'warning'), semantic: undefined }, 'Warning')
+        .status,
     ).toBe('unsupported');
+    expect(applySemanticOverlay(finding('target-c', 'warning'), '').status).toBe('unsupported');
   });
 
   it('handles removed targets and page-level undo safely', () => {
     const first = addTarget('target-d');
     addTarget('target-e');
-    applySemanticOverlay(finding('target-d', 'selected'));
-    applySemanticOverlay(finding('target-e', 'invalid'));
+    applySemanticOverlay(finding('target-d', 'selected'), 'Selected');
+    applySemanticOverlay(finding('target-e', 'invalid'), 'Invalid');
     first.remove();
 
     expect(removeAllSemanticOverlays()).toEqual({ removed: 2, missingTargets: 1 });
@@ -85,7 +88,7 @@ describe('page semantic overlays', () => {
 
   it('preserves page descriptions added after the overlay', () => {
     const target = addTarget('target-mutated');
-    applySemanticOverlay(finding('target-mutated', 'warning'));
+    applySemanticOverlay(finding('target-mutated', 'warning'), 'Warning');
     const overlay = document.querySelector<HTMLElement>(
       '[data-colorsense-overlay-for="target-mutated"]',
     );
@@ -100,7 +103,9 @@ describe('page semantic overlays', () => {
     const target = addTarget('target-f');
     target.remove();
 
-    expect(applySemanticOverlay(finding('target-f', 'success')).status).toBe('not-found');
+    expect(applySemanticOverlay(finding('target-f', 'success'), 'Success').status).toBe(
+      'not-found',
+    );
     expect(removeSemanticOverlay('target-f').status).toBe('not-found');
   });
 });
