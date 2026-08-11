@@ -7,9 +7,10 @@ into meaning that can also be understood through text, icons, shapes, and patter
 
 ## Status
 
-ColorSense is at **v0.1 Foundation**. The repository currently provides a buildable Chrome Manifest
-V3 extension skeleton and an Issue-to-PR governance baseline. It does not scan or modify page colors
-yet.
+The **MVP core loop is implemented on `main` and is not yet published as a GitHub Release**. The
+Chrome Manifest V3 extension can scan visible DOM and SVG color properties on demand, report
+deterministic and explainable candidates, highlight findings, and apply reversible non-color
+semantic aids. The repository also includes the Issue-to-PR governance and supply-chain baseline.
 
 ## Product principle
 
@@ -55,8 +56,9 @@ decisions live under [docs](docs/).
 ## 繁體中文導覽
 
 ColorSense 的核心不是替整個畫面換色，而是把網頁中只靠顏色傳遞的資訊，轉換成文字、
-圖示、形狀與模式。v0.1 目前只提供可建置的 Chrome Extension 工程與治理骨架，尚未實作
-DOM 掃描或自動修正。
+圖示、形狀與模式。目前 `main` 已完成 MVP 核心流程：使用者可主動掃描可見 DOM／SVG
+色彩、檢視具證據與信心分數的候選項目、定位元素，並套用或復原非色彩語意提示；尚未
+發布為正式 GitHub Release。
 
 開發需求與指令請參考上方 **Development**；產品範圍請閱讀
 [MVP](docs/MVP.md) 與 [Roadmap](docs/ROADMAP.md)。
