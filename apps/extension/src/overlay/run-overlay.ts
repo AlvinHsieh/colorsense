@@ -8,8 +8,11 @@ import {
 } from './page-overlays';
 import type { OverlayResult, UndoAllResult } from './types';
 
-export async function applyOverlayToActiveTab(finding: ColorOnlyFinding): Promise<OverlayResult> {
-  return executeOnActiveTab(applySemanticOverlay, [finding], isOverlayResult);
+export async function applyOverlayToActiveTab(
+  finding: ColorOnlyFinding,
+  semanticLabel: string,
+): Promise<OverlayResult> {
+  return executeOnActiveTab(applySemanticOverlay, [finding, semanticLabel], isOverlayResult);
 }
 
 export async function removeOverlayFromActiveTab(elementRef: string): Promise<OverlayResult> {

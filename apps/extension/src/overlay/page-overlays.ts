@@ -1,15 +1,18 @@
 import type { ColorOnlyFinding, SupportedSemantic } from '../detector/types';
 import type { OverlayResult, UndoAllResult } from './types';
 
-export function applySemanticOverlay(finding: ColorOnlyFinding): OverlayResult {
-  const representations: Record<SupportedSemantic, { icon: string; label: string }> = {
-    success: { icon: '✓', label: 'Success' },
-    warning: { icon: '⚠', label: 'Warning' },
-    error: { icon: '✕', label: 'Error' },
-    increase: { icon: '▲', label: 'Increase' },
-    decrease: { icon: '▼', label: 'Decrease' },
-    selected: { icon: '●', label: 'Selected' },
-    invalid: { icon: '!', label: 'Invalid' },
+export function applySemanticOverlay(
+  finding: ColorOnlyFinding,
+  semanticLabel: string,
+): OverlayResult {
+  const semanticIcons: Record<SupportedSemantic, string> = {
+    success: '✓',
+    warning: '⚠',
+    error: '✕',
+    increase: '▲',
+    decrease: '▼',
+    selected: '●',
+    invalid: '!',
   };
 
   function findTarget(elementRef: string): Element | undefined {
@@ -26,7 +29,10 @@ export function applySemanticOverlay(finding: ColorOnlyFinding): OverlayResult {
 
   if (
     !finding.semantic ||
-    !Object.prototype.hasOwnProperty.call(representations, finding.semantic) ||
+    !Object.prototype.hasOwnProperty.call(semanticIcons, finding.semantic) ||
+    typeof semanticLabel !== 'string' ||
+    semanticLabel.trim().length === 0 ||
+    semanticLabel.length > 64 ||
     finding.confidenceScore < 0.55
   ) {
     return { elementRef: finding.elementRef, status: 'unsupported' };
@@ -40,7 +46,7 @@ export function applySemanticOverlay(finding: ColorOnlyFinding): OverlayResult {
     return { elementRef: finding.elementRef, status: 'not-found' };
   }
 
-  const representation = representations[finding.semantic];
+  const icon = semanticIcons[finding.semantic];
   const overlay = document.createElement('span');
   const safeId = `colorsense-overlay-${crypto.randomUUID()}`;
   const originalDescription = target.getAttribute('aria-describedby');
@@ -52,8 +58,8 @@ export function applySemanticOverlay(finding: ColorOnlyFinding): OverlayResult {
     overlay.dataset.colorsenseOriginalDescribedby = originalDescription;
   }
   overlay.setAttribute('role', 'note');
-  overlay.setAttribute('aria-label', `ColorSense: ${representation.label}`);
-  overlay.textContent = `${representation.icon} ${representation.label}`;
+  overlay.setAttribute('aria-label', `ColorSense: ${semanticLabel}`);
+  overlay.textContent = `${icon} ${semanticLabel}`;
 
   const rect = target.getBoundingClientRect();
   Object.assign(overlay.style, {

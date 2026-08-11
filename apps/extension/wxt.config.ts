@@ -9,11 +9,12 @@ export default defineConfig({
     zipSources: false,
   },
   manifest: {
-    name: 'ColorSense',
-    description: 'Turn color-dependent web signals into accessible semantic information.',
+    default_locale: 'en',
+    name: '__MSG_extensionName__',
+    description: '__MSG_extensionDescription__',
     permissions: ['activeTab', 'scripting', 'storage'],
     action: {
-      default_title: 'ColorSense',
+      default_title: '__MSG_extensionActionTitle__',
     },
   },
 });

@@ -48,7 +48,7 @@ describe('ColorSense local MVP journey', () => {
     expect(JSON.stringify(scan)).not.toContain('Offline');
     expect(JSON.stringify(scan)).not.toContain('Service offline');
 
-    expect(status && applySemanticOverlay(status)).toMatchObject({ status: 'applied' });
+    expect(status && applySemanticOverlay(status, 'Error')).toMatchObject({ status: 'applied' });
     expect(document.querySelector('[data-colorsense-overlay-for]')).toHaveTextContent('✕ Error');
     expect(removeAllSemanticOverlays()).toEqual({ removed: 1, missingTargets: 0 });
     expect(document.querySelector('[data-colorsense-overlay-for]')).toBeNull();

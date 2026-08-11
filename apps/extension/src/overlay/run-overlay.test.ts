@@ -21,17 +21,24 @@ describe('overlay active-tab runner', () => {
     ]);
 
     await expect(
-      applyOverlayToActiveTab({
-        elementRef: 'target',
-        candidateType: 'status',
-        evidence: ['status-keyword'],
-        confidence: 'medium',
-        confidenceScore: 0.7,
-        disposition: 'color-only-candidate',
-        reviewRequired: true,
-        semantic: 'error',
-      }),
+      applyOverlayToActiveTab(
+        {
+          elementRef: 'target',
+          candidateType: 'status',
+          evidence: ['status-keyword'],
+          confidence: 'medium',
+          confidenceScore: 0.7,
+          disposition: 'color-only-candidate',
+          reviewRequired: true,
+          semantic: 'error',
+        },
+        'Error',
+      ),
     ).resolves.toEqual({ elementRef: 'target', status: 'applied' });
+
+    expect(browserMock.scripting.executeScript).toHaveBeenCalledWith(
+      expect.objectContaining({ args: [expect.any(Object), 'Error'] }),
+    );
   });
 
   it('validates page undo and rejects malformed results', async () => {
