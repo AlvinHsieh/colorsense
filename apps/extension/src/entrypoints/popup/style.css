@@ -1,4 +1,6 @@
 :root {
+  width: 400px;
+  overflow-x: hidden;
   color: #17211d;
   background: #e9e5da;
   font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
@@ -16,9 +18,12 @@
 }
 
 body {
+  width: 400px;
   margin: 0;
-  min-width: 400px;
-  max-width: 400px;
+}
+
+#root {
+  width: 400px;
 }
 
 button,
@@ -27,6 +32,7 @@ select {
 }
 
 .shell {
+  width: 100%;
   min-height: 540px;
   padding: 24px;
   background:
