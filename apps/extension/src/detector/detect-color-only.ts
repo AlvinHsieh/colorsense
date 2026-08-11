@@ -1,5 +1,11 @@
 import type { DocumentColorScan, ElementColorObservation } from '../scanner/types';
-import type { CandidateType, ColorOnlyFinding, ConfidenceLevel, DetectionEvidence } from './types';
+import type {
+  CandidateType,
+  ColorOnlyFinding,
+  ConfidenceLevel,
+  DetectionEvidence,
+  SupportedSemantic,
+} from './types';
 
 const VISUAL_PROPERTIES = new Set([
   'background',
@@ -37,9 +43,32 @@ export function detectColorOnlyIndicators(scan: DocumentColorScan): ColorOnlyFin
         confidenceScore,
         disposition: hasAlternative ? 'has-non-color-alternative' : 'color-only-candidate',
         reviewRequired: confidence !== 'high' || !hasAlternative,
+        ...toSupportedSemantic(element, classification),
       },
     ];
   });
+}
+
+function toSupportedSemantic(
+  element: ElementColorObservation,
+  candidateType: CandidateType,
+): { semantic: SupportedSemantic } | Record<string, never> {
+  if (candidateType === 'validation' && element.signals.ariaStates.includes('invalid')) {
+    return { semantic: 'invalid' };
+  }
+  if (candidateType === 'selection' && element.signals.ariaStates.length > 0) {
+    return { semantic: 'selected' };
+  }
+  if (candidateType === 'trend') {
+    if (element.signals.text.includes('positive-number')) return { semantic: 'increase' };
+    if (element.signals.text.includes('negative-number')) return { semantic: 'decrease' };
+  }
+
+  const statusSignals = [...element.signals.text, ...element.signals.nearbyText];
+  if (statusSignals.includes('success-keyword')) return { semantic: 'success' };
+  if (statusSignals.includes('warning-keyword')) return { semantic: 'warning' };
+  if (statusSignals.includes('error-keyword')) return { semantic: 'error' };
+  return {};
 }
 
 function classify(element: ElementColorObservation): CandidateType | undefined {

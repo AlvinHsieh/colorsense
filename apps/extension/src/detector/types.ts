@@ -18,6 +18,8 @@ export type DetectionEvidence = (typeof DETECTION_EVIDENCE)[number];
 
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
 export type AccessibilityDisposition = 'color-only-candidate' | 'has-non-color-alternative';
+export type SupportedSemantic =
+  'success' | 'warning' | 'error' | 'increase' | 'decrease' | 'selected' | 'invalid';
 
 export interface ColorOnlyFinding {
   elementRef: string;
@@ -27,4 +29,5 @@ export interface ColorOnlyFinding {
   confidenceScore: number;
   disposition: AccessibilityDisposition;
   reviewRequired: boolean;
+  semantic?: SupportedSemantic;
 }
