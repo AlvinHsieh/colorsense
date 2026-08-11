@@ -8,19 +8,20 @@ import type {
   TextSignal,
 } from './types';
 
-const DEFAULT_MAX_ELEMENTS = 2_000;
-const MAX_ELEMENTS_LIMIT = 5_000;
-
 /**
  * Runs inside the active page through browser.scripting.executeScript.
  * Keep runtime helpers nested: injected functions cannot access module scope.
  */
-export function scanDocument(
-  scanId: string,
-  maxElements = DEFAULT_MAX_ELEMENTS,
-): DocumentColorScan {
-  const boundedLimit = Number.isInteger(maxElements)
-    ? Math.min(Math.max(maxElements, 1), MAX_ELEMENTS_LIMIT)
+export function scanDocument(scanId: string, maxElements?: number): DocumentColorScan {
+  // `scanDocument` is serialized and executed in the target page. Keep these
+  // values local so the injected function never depends on extension module
+  // scope, which is unavailable in Chrome's scripting execution context.
+  const DEFAULT_MAX_ELEMENTS = 2_000;
+  const MAX_ELEMENTS_LIMIT = 5_000;
+
+  const requestedLimit = maxElements ?? DEFAULT_MAX_ELEMENTS;
+  const boundedLimit = Number.isInteger(requestedLimit)
+    ? Math.min(Math.max(requestedLimit, 1), MAX_ELEMENTS_LIMIT)
     : DEFAULT_MAX_ELEMENTS;
   let unsupportedColorValues = 0;
 
