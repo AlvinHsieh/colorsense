@@ -79,13 +79,11 @@ export function App() {
       setActionMessage(nextMessages.preferenceSaveFailed);
     }
 
-    if (appliedRefs.size > 0) {
-      try {
-        await removeAllOverlaysFromActiveTab();
-        setAppliedRefs(new Set());
-      } catch (error: unknown) {
-        setActionMessage(localizeError(rawErrorMessage(error), nextMessages));
-      }
+    try {
+      await removeAllOverlaysFromActiveTab();
+      setAppliedRefs(new Set());
+    } catch (error: unknown) {
+      setActionMessage(localizeError(rawErrorMessage(error), nextMessages));
     }
   }
 

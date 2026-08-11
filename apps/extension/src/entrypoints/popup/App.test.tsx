@@ -135,6 +135,8 @@ describe('ColorSense popup scan workflow', () => {
   it('switches to Traditional Chinese, updates document language, and persists locally', async () => {
     render(<App />);
 
+    mockedRemoveAll.mockClear();
+
     fireEvent.change(screen.getByRole('combobox', { name: 'Language' }), {
       target: { value: 'zh-TW' },
     });
@@ -144,6 +146,7 @@ describe('ColorSense popup scan workflow', () => {
     expect(document.documentElement.lang).toBe('zh-TW');
     expect(document.title).toBe('ColorSense — 揭示顏色背後的語意');
     await waitFor(() => expect(mockedSaveLocale).toHaveBeenCalledWith('zh-TW'));
+    expect(mockedRemoveAll).toHaveBeenCalledTimes(1);
   });
 
   it('loads a persisted locale and removes stale overlays when the language changes', async () => {
