@@ -1,0 +1,6 @@
+.git/
+.wxt/
+.output/
+coverage/
+node_modules/
+pnpm-lock.yaml

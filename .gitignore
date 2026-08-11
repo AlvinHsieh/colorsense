@@ -1,0 +1,13 @@
+node_modules/
+.pnpm-store/
+.wxt/
+.output/
+coverage/
+dist/
+.worktrees/
+.DS_Store
+*.log
+*.local
+.env
+.env.*
+!.env.example

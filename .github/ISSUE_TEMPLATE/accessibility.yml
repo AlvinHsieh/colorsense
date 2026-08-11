@@ -1,0 +1,49 @@
+name: Accessibility case
+description: Document a real color-dependent web barrier without sharing sensitive content
+title: '[Accessibility]: '
+labels:
+  - type/accessibility
+  - status/intake
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Remove account details, private URLs, personal data, and confidential screenshots. Describe
+        the semantic barrier rather than asking for medical advice.
+  - type: textarea
+    id: scenario
+    attributes:
+      label: User scenario
+      description: What task is the user trying to complete, and how does color block understanding?
+    validations:
+      required: true
+  - type: textarea
+    id: signal
+    attributes:
+      label: Color-dependent signal
+      description: Explain the status, trend, category, selection, or validation meaning carried by color.
+    validations:
+      required: true
+  - type: textarea
+    id: current_alternatives
+    attributes:
+      label: Existing non-color alternatives
+      description: Note any text, ARIA, icon, pattern, shape, or legend currently available.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Accessible outcome and acceptance criteria
+    validations:
+      required: true
+  - type: dropdown
+    id: data_sensitivity
+    attributes:
+      label: Data sensitivity
+      options:
+        - Public example with no personal data
+        - Sanitized private-site pattern
+        - Cannot safely share details publicly
+    validations:
+      required: true

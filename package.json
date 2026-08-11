@@ -1,0 +1,43 @@
+{
+  "name": "colorsense",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A browser-level semantic accessibility layer for color-dependent web interfaces.",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.13.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build:chrome": "pnpm --filter @colorsense/extension build:chrome",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --max-warnings=0",
+    "package:chrome": "node scripts/clean-artifacts.mjs && pnpm --filter @colorsense/extension package:chrome && pnpm verify:artifact",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm --filter @colorsense/extension typecheck",
+    "verify:artifact": "node scripts/verify-artifact.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.2",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "eslint": "9.39.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.9.0",
+    "jsdom": "30.0.1",
+    "prettier": "3.9.6",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.67.0",
+    "vitest": "4.1.10"
+  }
+}

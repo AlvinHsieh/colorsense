@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a reproducible ColorSense defect
+title: '[Bug]: '
+labels:
+  - type/bug
+  - status/intake
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Do not include credentials, private page content, or personal data. Security vulnerabilities
+        must be reported privately through SECURITY.md.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the expected and actual observable behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      placeholder: "1. Open ...\n2. Select ...\n3. Observe ..."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit SHA
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include browser and OS versions. Remove tokens, personal data, and unrelated logs.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: State the observable result that would prove the defect is fixed.
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk
+      options:
+        - Low — isolated behavior or documentation
+        - Medium — general functionality or compatibility
+        - High — security, privacy, permission, or data impact
+    validations:
+      required: true

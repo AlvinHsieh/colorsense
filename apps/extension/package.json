@@ -1,0 +1,21 @@
+{
+  "name": "@colorsense/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:chrome": "wxt build --browser chrome",
+    "dev": "wxt --browser chrome",
+    "package:chrome": "wxt zip --browser chrome",
+    "postinstall": "wxt prepare",
+    "typecheck": "wxt prepare && tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@wxt-dev/module-react": "1.2.2",
+    "wxt": "0.21.3"
+  }
+}

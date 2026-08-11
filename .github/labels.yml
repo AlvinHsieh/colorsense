@@ -1,0 +1,87 @@
+- name: type/bug
+  color: d73a4a
+  description: Reproducible incorrect behavior
+- name: type/feature
+  color: 0e8a16
+  description: Product or engineering capability
+- name: type/accessibility
+  color: 5319e7
+  description: Real color-dependent accessibility barrier
+- name: type/docs
+  color: 0075ca
+  description: Documentation-only change
+- name: type/chore
+  color: cfd3d7
+  description: Maintenance or repository governance
+- name: type/dependencies
+  color: 0366d6
+  description: Dependency or supply-chain change
+- name: priority/p0
+  color: b60205
+  description: Critical and urgent
+- name: priority/p1
+  color: d93f0b
+  description: High priority
+- name: priority/p2
+  color: fbca04
+  description: Normal priority
+- name: priority/p3
+  color: c2e0c6
+  description: Low priority
+- name: status/intake
+  color: e4e669
+  description: Awaiting triage
+- name: status/ready
+  color: 0e8a16
+  description: Decision-complete and ready for work
+- name: status/in-progress
+  color: 1d76db
+  description: Owned and being implemented
+- name: status/in-review
+  color: 5319e7
+  description: Pull request under review
+- name: status/merge-ready
+  color: 006b75
+  description: Checks and required approvals complete
+- name: status/released
+  color: 0052cc
+  description: Included in an immutable release
+- name: status/observed
+  color: 008672
+  description: In post-release observation
+- name: status/done
+  color: 0e8a16
+  description: Completed after observation
+- name: status/needs-info
+  color: fef2c0
+  description: Missing required information
+- name: status/blocked
+  color: b60205
+  description: Blocked by a confirmed dependency or decision
+- name: status/failed-ci
+  color: d93f0b
+  description: CI failed and requires root-cause analysis
+- name: status/rollback
+  color: b60205
+  description: Release rollback or containment required
+- name: status/wontfix
+  color: ffffff
+  description: Closed with a documented reason
+- name: risk/low
+  color: c2e0c6
+  description: Isolated, reversible change
+- name: risk/medium
+  color: fbca04
+  description: General functionality or compatibility risk
+- name: risk/high
+  color: b60205
+  description: Security, privacy, permission, release, or data risk
+- name: agent/eligible
+  color: bfdadc
+  description: Suitable for an Issue-scoped Agent task
+- name: agent/assigned
+  color: 1d76db
+  description: Assigned to an Agent in an isolated branch or worktree
+- name: agent/human-required
+  color: d4c5f9
+  description: Requires a maintainer decision or privileged action

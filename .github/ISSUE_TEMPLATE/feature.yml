@@ -1,0 +1,40 @@
+name: Feature request
+description: Propose a measurable product or engineering outcome
+title: '[Feature]: '
+labels:
+  - type/feature
+  - status/intake
+body:
+  - type: textarea
+    id: user_problem
+    attributes:
+      label: User and problem
+      description: Describe who is affected and the observable problem, not only a preferred solution.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome and acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals and alternatives
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk
+      options:
+        - Low — isolated behavior or documentation
+        - Medium — general functionality or compatibility
+        - High — security, privacy, permission, or data impact
+    validations:
+      required: true
